@@ -16,7 +16,10 @@
 
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.mapping.DefaultReferenceObjectResolver;
 import com.github.jmkgreen.morphia.mapping.Mapper;
+import com.github.jmkgreen.morphia.mapping.ReferenceObjectResolver;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -75,4 +78,15 @@ public @interface Reference {
      * Create a proxy around the reference which will be resolved on the first method call.
      */
     boolean lazy() default false;
+
+    /**
+     * DB collection's field name which referenced entity should be resolved by.
+     * Defaults to MongoDB's _id field
+     */
+    String referenceField() default Mapper.ID_KEY;
+
+    /**
+     * Reference field resolver class
+     */
+    Class<? extends ReferenceObjectResolver> objectResolver() default DefaultReferenceObjectResolver.class;
 }
