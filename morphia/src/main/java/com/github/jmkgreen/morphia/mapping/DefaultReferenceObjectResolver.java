@@ -5,6 +5,7 @@ package com.github.jmkgreen.morphia.mapping;
  * Date: 13.12.12
  * Time: 21:23
  */
+
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
 

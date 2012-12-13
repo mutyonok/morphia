@@ -20,12 +20,7 @@ import com.github.jmkgreen.morphia.mapping.DefaultReferenceObjectResolver;
 import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.github.jmkgreen.morphia.mapping.ReferenceObjectResolver;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Identifies that a field should be mapped to MongoDB DBRef.
