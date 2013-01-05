@@ -8,7 +8,7 @@ To use, add Morphia to your Java SE or EE project alongside the mongo-java-drive
 
 Available from [the downloads page on GitHub](https://github.com/jmkgreen/morphia/downloads) - latest release and snapshots are available routinely.
 
-*Maven* users: Releases are available in Central. Snapshots are available via [OSS Sonartype](https://oss.sonatype.org).
+*Maven* users: Releases are available in Central. Snapshots are available via [OSS Sonatype](https://oss.sonatype.org).
 
 <table>
 	<tr>
@@ -27,7 +27,10 @@ Available from [the downloads page on GitHub](https://github.com/jmkgreen/morphi
 
 ### Documentation
 
-The [original project's site](http://code.google.com/p/morphia/) still has quite a lot of good example code.
+The [wiki](https://github.com/jmkgreen/morphia/wiki) has quite a lot of good example code.
+It was copied over from the original GoogleCode site.
+
+Maven Site docs are [here](http://jmkgreen.github.com/morphia).
 
 JavaDoc packages are available for more detailed IDE-based help.
 
