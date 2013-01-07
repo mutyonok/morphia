@@ -21,6 +21,8 @@ import com.github.jmkgreen.morphia.utils.ReflectionUtils;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
+import org.bson.BSONObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -168,7 +170,13 @@ class ReferenceMapper implements CustomMapper {
                             Reference refAnn, EntityCache cache, DefaultMapper mapr) {
         Class referenceObjClass = fieldType;
 
-        DBRef dbRef = (DBRef) mf.getDbObjectValue(dbObject);
+        Object value = mf.getDbObjectValue(dbObject);
+        DBRef dbRef = null;
+        if (value instanceof DBRef) {
+            dbRef = (DBRef) value;
+        } else if (value instanceof BSONObject) {
+            dbRef = new DBRef(mapr.datastoreProvider.get().getDB(), (BSONObject) value);
+        }
         if (dbRef != null) {
             Object resolvedObject = null;
             if (refAnn.lazy() && LazyFeatureDependencies.assertDependencyFullFilled()) {
@@ -235,7 +243,7 @@ class ReferenceMapper implements CustomMapper {
         } else {
             Object dbVal = mf.getDbObjectValue(dbObject);
             final Collection refs = references;
-            new IterHelper<String, Object>().loopOrSingle((Object) dbVal, new IterCallback<Object>() {
+            new IterHelper<String, Object>().loopOrSingle(dbVal, new IterCallback<Object>() {
                 @Override
                 public void eval(Object val) {
                     DBRef dbRef = (DBRef) val;
@@ -285,7 +293,7 @@ class ReferenceMapper implements CustomMapper {
             return cached;
 
         //TODO: if _db is null, set it?
-        DBObject refDbObject = (DBObject) dbRef.fetch();
+        DBObject refDbObject = dbRef.fetch();
 
         if (refDbObject != null) {
             Object refObj = mapr.getOptions().objectFactory.createInstance(mapr, mf, refDbObject);
@@ -320,7 +328,13 @@ class ReferenceMapper implements CustomMapper {
             new IterHelper<Object, Object>().loopMap(dbVal, new MapIterCallback<Object, Object>() {
                 @Override
                 public void eval(Object key, Object val) {
-                    DBRef dbRef = (DBRef) val;
+//                    Object value = mf.getDbObjectValue(dbObject);
+                    DBRef dbRef = null;
+                    if (val instanceof DBRef) {
+                        dbRef = (DBRef) val;
+                    } else if (val instanceof BSONObject) {
+                        dbRef = new DBRef(mapr.datastoreProvider.get().getDB(), (BSONObject) val);
+                    }
 
                     Object objKey = mapr.converters.decode(mf.getMapKeyClass(), key);
 

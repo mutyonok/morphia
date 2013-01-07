@@ -1,19 +1,15 @@
 package com.github.jmkgreen.morphia.mapping;
 
-import com.github.jmkgreen.morphia.annotations.Id;
 import com.github.jmkgreen.morphia.annotations.Reference;
 import com.github.jmkgreen.morphia.mapping.lazy.LazyFeatureDependencies;
 import com.github.jmkgreen.morphia.mapping.lazy.ProxyTestBase;
 import com.github.jmkgreen.morphia.testutil.TestEntity;
-import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: mutyonok

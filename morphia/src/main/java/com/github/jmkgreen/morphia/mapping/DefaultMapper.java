@@ -605,7 +605,8 @@ public class DefaultMapper implements Mapper {
         if (key.getKind() == null)
             key.setKind(getCollectionName(key.getKindClass()));
 
-        return new DBRef(null, key.getKind(), key.getId());
+        Object id = toMongoObject(key.getId(), false);
+        return new DBRef(null, key.getKind(), id);
     }
 
     public String updateKind(Key key) {

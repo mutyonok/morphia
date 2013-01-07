@@ -1,19 +1,20 @@
 package com.github.jmkgreen.morphia;
 
-import java.io.Serializable;
-
-import org.junit.Assert;
-
+import com.github.jmkgreen.morphia.annotations.*;
+import com.github.jmkgreen.morphia.mapping.lazy.LazyFeatureDependencies;
+import com.mongodb.*;
 import org.bson.types.ObjectId;
+import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.jmkgreen.morphia.annotations.Entity;
-import com.github.jmkgreen.morphia.annotations.Id;
-import com.github.jmkgreen.morphia.annotations.PostLoad;
-import com.github.jmkgreen.morphia.annotations.Property;
-import com.github.jmkgreen.morphia.annotations.Reference;
-import com.github.jmkgreen.morphia.mapping.lazy.LazyFeatureDependencies;
-import org.junit.Ignore;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests mapper functions; this is tied to some of the internals.
@@ -65,7 +66,7 @@ public class TestMapper extends TestBase {
 		private static final long serialVersionUID = 1L;
 
 		@Property("v")
-		ObjectId id;
+		ObjectId id = new ObjectId();
 		@Property("t")
 		String type;
 
@@ -138,11 +139,23 @@ public class TestMapper extends TestBase {
 	public static class UsesCustomIdObject {
 		@Id CustomId id;
 		String text;
-	}
+
+        public UsesCustomIdObject() {
+        }
+
+        public UsesCustomIdObject(CustomId id, String text) {
+            this.id = id;
+            this.text = text;
+        }
+    }
 
 	public static class ReferencesCustomId {
 		@Id String id;
 		@Reference UsesCustomIdObject child;
+		@Reference
+        List<UsesCustomIdObject> children = new ArrayList<UsesCustomIdObject>();
+        @Reference
+        Map<String, UsesCustomIdObject> childMap = new HashMap<String, UsesCustomIdObject>();
 	}
 
     /**
@@ -204,26 +217,54 @@ public class TestMapper extends TestBase {
 		ds.save(ucio);
 	}
 
-    /**
-     * Fix me. Referenced id field may need marshaling.
-     * @throws Exception
-     */
-	@Test @Ignore
+    @Test
+    public void testName() throws Exception {
+        DBCollection test = db.getCollection("test");
+        DBCollection test2 = db.getCollection("test2");
+        test.save(new BasicDBObject("_id", new BasicDBObject("name", "Alex").append("email", "test@example.com")));
+        test2.save(new BasicDBObject("_id", "test2").append("ref", new DBRef(db, "test", new BasicDBObject("name", "Alex").append("email", "test@example.com"))));
+        DBObject testOne = test2.findOne(new BasicDBObject("_id", "test2"));
+        System.out.println(testOne);
+    }
+
+    @Test
 	public void ReferenceCustomId() throws Exception {
+        ads.setDecoderFact(new DBDecoderFactory() {
+            public DBDecoder create() {
+                return new DefaultDBDecoder() {
+                    @Override
+                    public DBCallback getDBCallback(DBCollection collection) {
+                        return new MyDBCallback(collection);
+                    }
+                };
+            }
+        });
 		CustomId cId = new CustomId();
-		cId.id = new ObjectId();
 		cId.type = "banker";
 
-        UsesCustomIdObject objWithCustomId = new UsesCustomIdObject();
-        objWithCustomId.id = cId;
-        objWithCustomId.text = "hello world";
+        UsesCustomIdObject child1 = new UsesCustomIdObject(cId, "hello world");
 
-		ReferencesCustomId obj = new ReferencesCustomId();
-		obj.id = "testId";
-        obj.child = objWithCustomId;
+		ReferencesCustomId parent = new ReferencesCustomId();
+		parent.id = "testId";
+        parent.child = child1;
+        parent.children.add(child1);
+        parent.childMap.put("1", child1);
 
-		ds.save(objWithCustomId);
-		ds.save(obj);
-	}
+		ds.save(child1);
+        ds.save(parent);
+
+        ReferencesCustomId fetched = ds.get(ReferencesCustomId.class, parent.id);
+
+        assertNotNull(fetched);
+
+        assertNotNull(fetched.child);
+        assertEquals(child1.id, fetched.child.id);
+        assertEquals(child1.text, fetched.child.text);
+
+        assertNotNull(fetched.children);
+        assertEquals(1, fetched.children.size());
+        assertEquals(child1.id, fetched.children.get(0).id);
+        assertEquals(child1.text, fetched.children.get(0).text);
+    }
 
 }
