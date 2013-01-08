@@ -229,16 +229,6 @@ public class TestMapper extends TestBase {
 
     @Test
 	public void ReferenceCustomId() throws Exception {
-        ads.setDecoderFact(new DBDecoderFactory() {
-            public DBDecoder create() {
-                return new DefaultDBDecoder() {
-                    @Override
-                    public DBCallback getDBCallback(DBCollection collection) {
-                        return new MyDBCallback(collection);
-                    }
-                };
-            }
-        });
 		CustomId cId = new CustomId();
 		cId.type = "banker";
 

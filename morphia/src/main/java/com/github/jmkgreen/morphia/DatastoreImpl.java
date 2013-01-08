@@ -29,21 +29,9 @@ import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.github.jmkgreen.morphia.utils.Assert;
 import com.github.jmkgreen.morphia.utils.IndexDirection;
 import com.github.jmkgreen.morphia.utils.IndexFieldDef;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.CommandResult;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBDecoderFactory;
-import com.mongodb.DBObject;
-import com.mongodb.DBRef;
-import com.mongodb.MapReduceCommand;
+import com.mongodb.*;
 import com.mongodb.MapReduceCommand.OutputType;
-import com.mongodb.MapReduceOutput;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +94,16 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
         // VERY discussable
         DatastoreHolder.getInstance().set(this);
+        setDecoderFact(new DBDecoderFactory() {
+            public DBDecoder create() {
+                return new DefaultDBDecoder() {
+                    @Override
+                    public DBCallback getDBCallback(DBCollection collection) {
+                        return new CompoundIdAwareDBCallback(collection);
+                    }
+                };
+            }
+        });
     }
 
     /**
@@ -129,7 +127,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         this(morphia.getMapper(), mongo, dbName);
 
         if (username != null)
-            if (!this.db.authenticate(username, password))
+            if (!this.db.isAuthenticated() && !this.db.authenticate(username, password))
                 throw new AuthenticationException("User '" + username
                         + "' cannot be authenticated with the given password for database '" + dbName + "'");
 

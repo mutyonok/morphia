@@ -9,8 +9,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MyDBCallback extends BasicBSONCallback implements DBCallback{
-    public MyDBCallback( DBCollection coll ){
+/**
+ * This class is copied from {@linkplain DefaultDBCallback} and enhanced that it could handle compound $id
+ * field in DBRefs. There is a bug in MongoDB Java driver.
+ * See https://jira.mongodb.org/browse/JAVA-722 for the bug details.
+ * The class will be removed just after the bug will be fixed.
+ * It is left in com.mongodb package as it's using package-private variables
+ */
+@Deprecated
+public class CompoundIdAwareDBCallback extends BasicBSONCallback implements DBCallback{
+    public CompoundIdAwareDBCallback(DBCollection coll){
         _collection = coll;
         _db = _collection == null ? null : _collection.getDB();
     }
@@ -108,12 +116,13 @@ public class MyDBCallback extends BasicBSONCallback implements DBCallback{
     public Object objectDone() {
         BSONObject o = (BSONObject)super.objectDone();
         String name = null;
-        if (names.size() > 0) name = names.removeLast();
-        System.out.println(name);
-        if ( name != null &&
-                ! ( o instanceof List ) &&
+        if ( names.size() > 0 ) {
+            name = names.removeLast();
+        }
+        if ( ! ( o instanceof List ) &&
                 o.containsField( "$ref" ) &&
-                o.containsField( "$id" ) ){
+                o.containsField( "$id" ) &&
+                name != null){
             return cur().put( name , new DBRef( _db, o ) );
         }
 
