@@ -218,16 +218,6 @@ public class TestMapper extends TestBase {
 	}
 
     @Test
-    public void testName() throws Exception {
-        DBCollection test = db.getCollection("test");
-        DBCollection test2 = db.getCollection("test2");
-        test.save(new BasicDBObject("_id", new BasicDBObject("name", "Alex").append("email", "test@example.com")));
-        test2.save(new BasicDBObject("_id", "test2").append("ref", new DBRef(db, "test", new BasicDBObject("name", "Alex").append("email", "test@example.com"))));
-        DBObject testOne = test2.findOne(new BasicDBObject("_id", "test2"));
-        System.out.println(testOne);
-    }
-
-    @Test
 	public void ReferenceCustomId() throws Exception {
 		CustomId cId = new CustomId();
 		cId.type = "banker";
