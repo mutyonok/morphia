@@ -21,8 +21,6 @@ import com.github.jmkgreen.morphia.utils.ReflectionUtils;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
-import org.bson.BSONObject;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -170,13 +168,7 @@ class ReferenceMapper implements CustomMapper {
                             Reference refAnn, EntityCache cache, DefaultMapper mapr) {
         Class referenceObjClass = fieldType;
 
-        Object value = mf.getDbObjectValue(dbObject);
-        DBRef dbRef = null;
-        if (value instanceof DBRef) {
-            dbRef = (DBRef) value;
-        } else if (value instanceof BSONObject) {
-            dbRef = new DBRef(mapr.datastoreProvider.get().getDB(), (BSONObject) value);
-        }
+        DBRef dbRef = (DBRef) mf.getDbObjectValue(dbObject);
         if (dbRef != null) {
             Object resolvedObject = null;
             if (refAnn.lazy() && LazyFeatureDependencies.assertDependencyFullFilled()) {
@@ -328,13 +320,7 @@ class ReferenceMapper implements CustomMapper {
             new IterHelper<Object, Object>().loopMap(dbVal, new MapIterCallback<Object, Object>() {
                 @Override
                 public void eval(Object key, Object val) {
-//                    Object value = mf.getDbObjectValue(dbObject);
-                    DBRef dbRef = null;
-                    if (val instanceof DBRef) {
-                        dbRef = (DBRef) val;
-                    } else if (val instanceof BSONObject) {
-                        dbRef = new DBRef(mapr.datastoreProvider.get().getDB(), (BSONObject) val);
-                    }
+                    DBRef dbRef = (DBRef) val;
 
                     Object objKey = mapr.converters.decode(mf.getMapKeyClass(), key);
 
